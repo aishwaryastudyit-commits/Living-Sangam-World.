@@ -185,48 +185,43 @@ Images   Audio   Dialogue
 ```text
 DTEC/
 │
-├── app.py
-├── gemini_client.py
-├── language_engine.py
-├── ocr_engine.py
-├── pulavar_ai.py
-├── pulavar_engine.py
-├── sangam_voice.py
-├── scene_generator.py
-├── scene_weaver.py
-├── video_engine.py
-├── schemas.py
-├── poems.json
-├── requirements.txt
+├── app.py                 # Main Streamlit application
+├── gemini_client.py       # AI model integration and API handling
+├── language_engine.py     # Translation and multilingual support
+├── ocr_engine.py          # OCR-based poem extraction from images
+├── pulavar_ai.py          # Interactive AI scholar interface
+├── pulavar_engine.py      # Literary analysis engine
+├── sangam_voice.py        # Multilingual narration generation
+├── scene_generator.py     # AI scene generation
+├── scene_weaver.py        # Scene orchestration and asset selection
+├── video_engine.py        # Experience video generation
+├── schemas.py             # Shared data structures
+├── poems.json             # Sangam poem library
+├── narration.txt          # Narration content/output
+├── requirements.txt       # Project dependencies
+├── .env                   # Environment configuration
 │
 ├── assets/
-│   ├── audio/
-│   │   ├── analysis_narration_en.mp3
-│   │   ├── analysis_narration_hi.mp3
-│   │   ├── analysis_narration_kn.mp3
-│   │   ├── analysis_narration_ml.mp3
-│   │   ├── analysis_narration_ta.mp3
-│   │   └── analysis_narration_te.mp3
-│   │
+│   ├── audio/             # Narration audio assets
 │   └── images/
-│       ├── cache/
-│       ├── scene_cache/
-│       │   ├── kurunji/
-│       │   ├── mullai/
-│       │   ├── marutham/
-│       │   ├── neytal/
-│       │   └── palai/
-│       │
-│       ├── kurunji/
-│       ├── mullai/
-│       ├── marutham/
-│       ├── neytal/
-│       └── palai/
+│       ├── cache/         # Generated image cache
+│       └── scene_cache/   # Curated heritage image library
+│           ├── kurunji/
+│           ├── mullai/
+│           ├── marutham/
+│           ├── neytal/
+│           └── palai/
 │
-├── generated_scenes/
-├── outputs/
+├── generated_scenes/      # Runtime-generated scene outputs
+├── outputs/               # Final generated assets
+│
 ├── prompts/
+│   ├── analysis_prompt.txt
+│   ├── chatbot_prompt.txt
+│   └── scene_prompt.txt
+│
 └── tests/
+    └── test_fallbacks.py
 ```
 
 
