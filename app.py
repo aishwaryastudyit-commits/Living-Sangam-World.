@@ -31,6 +31,57 @@ SCENE_CACHE = _build_scene_cache()
 
 load_dotenv()
 
+
+SECRET_KEYS = (
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "IMAGE_BACKEND",
+    "STABILITY_API_KEY",
+    "OPENAI_API_KEY",
+    "HF_TOKEN",
+    "TTS_BACKEND",
+    "ELEVENLABS_API_KEY",
+    "ELEVENLABS_VOICE_ID",
+    "DTEC_GEMINI_MODELS",
+    "DTEC_OCR_MODELS",
+    "DTEC_ENABLE_LIVE_TRANSLATION",
+    "DTEC_USE_BUNDLED_NARRATION",
+    "DTEC_PULAVAR_SLOW",
+    "DTEC_BURN_SUBTITLES",
+    "DTEC_TESSERACT_LANG",
+)
+
+
+def _clean_config_value(key: str, value: object) -> str:
+    """Normalize values from .env or Streamlit Secrets without changing code paths."""
+    cleaned = str(value).strip().strip('"').strip("'").strip()
+    if key in {"OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY", "STABILITY_API_KEY", "HF_TOKEN", "ELEVENLABS_API_KEY"}:
+        if cleaned.lower().startswith("bearer "):
+            cleaned = cleaned[7:].strip()
+    return cleaned
+
+
+def _load_streamlit_secrets_into_env() -> None:
+    """
+    Streamlit Cloud exposes st.secrets, while the app uses os.getenv everywhere.
+    Mirror supported secrets into os.environ so deployed and local config match.
+    """
+    for key in SECRET_KEYS:
+        secret_value = None
+        try:
+            if key in st.secrets:
+                secret_value = st.secrets[key]
+        except Exception:
+            secret_value = None
+
+        if secret_value:
+            os.environ[key] = _clean_config_value(key, secret_value)
+        elif os.getenv(key):
+            os.environ[key] = _clean_config_value(key, os.getenv(key, ""))
+
+
+_load_streamlit_secrets_into_env()
+
 st.set_page_config(
     page_title="Living Sangam World: AI-Powered Immersive Tamil Poetry Experience",
     page_icon="📜",
