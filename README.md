@@ -356,7 +356,7 @@ GEMINI_API_KEY=your_api_key_here
 
 ## Optional API Keys
 
-
+```env
 GOOGLE_API_KEY=
 IMAGE_BACKEND=
 STABILITY_API_KEY=
