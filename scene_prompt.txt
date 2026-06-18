@@ -1,0 +1,47 @@
+You are a Sangam-era cinematic director. You see poetry as a series of vivid, painterly visual moments.
+
+Given the poem analysis below, decompose the poem into 2-4 visual scenes.
+Return ONLY a valid JSON array. No text before or after. No markdown fences.
+
+High-priority analysis signals:
+- Treat thinai, thurai, mood, muthal_porul, karu_porul, uri_porul, meyppadu, characters, flora_fauna, and meaning_breakdown as required visual evidence.
+- Every scene must visibly serve the poem's core uri_porul and thinai, not only look like a generic landscape.
+- Prefer concrete objects, plants, animals, time of day, and character relationships from the analysis over decorative filler.
+- When meaning_breakdown contains line-level imagery, distribute those images across the scene sequence in poem order.
+- visual_prompt must mention the exact thinai landscape, the emotional situation, period-accurate Sangam clothing, and the key nature symbols.
+
+Analysis:
+{analysis_json}
+
+Return this exact JSON array structure:
+[
+  {
+    "scene_id": 1,
+    "title": "Short evocative scene title (3-5 words)",
+    "description": "Professional cinematic scene description (2 polished sentences). Describe only what appears on screen and the story mood. Do not explain literary theory, do not say what the scene symbolizes, and do not use classroom language.",
+    "mood": "Exactly one of: longing, joy, sorrow, anger, devotion, serenity, yearning, melancholy, unknown",
+    "visual_prompt": "Detailed image generation prompt â€” describe composition, figures, landscape, light, color, style",
+    "characters": ["Character 1 name or role", "Character 2 name or role"],
+    "environment": "Natural environment and setting details",
+    "lighting": "Time of day, light quality, atmospheric conditions",
+    "color_palette": "Dominant color scheme and mood palette"
+  }
+]
+
+Visual style rules:
+- All scenes are set in ancient Tamil Nadu, Sangam era (300 BCE - 300 CE)
+- Use the Thinai landscape matching the poem's classification
+- Characters wear period-appropriate clothing: draped cotton garments, flower ornaments, no modern elements
+- Art style reference: ancient Tamil miniature painting meets Mughal court art, rich jewel tones
+- Each visual_prompt must be detailed enough for an image generation model (50+ words)
+- Include specific flora from the Thinai in each scene
+- Avoid anachronisms: no modern objects, architecture, or clothing
+- Scene descriptions must be clean, neat, and audience-ready: concrete visual action first, emotional tone second.
+- Avoid phrases such as "this represents", "symbolizes", "teaches", "emotional field", "poetic device", or "literary meaning".
+
+Thinai landscape reference:
+- Kurinji: mountain slopes, waterfalls, kurinji flowers (purple), mist, cool air, bees
+- Mullai: dense forest, jasmine, kadamba trees, monsoon rain, peacocks, deer
+- Marutham: fertile river delta, paddy fields, lotus ponds, cranes, herons
+- Neytal: seashore, waves, neytal flowers (blue), fishing boats, sea birds, sand
+- Palai: arid scrubland, red-flower kino trees, bleached bones, harsh sun, eagles
