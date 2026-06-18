@@ -7,7 +7,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 
-SCENE_CACHE_DIR = Path("assets/images/scene_cache")
+BASE_DIR = Path(__file__).resolve().parent
+SCENE_CACHE_DIR = BASE_DIR / "assets" / "images" / "scene_cache"
+FALLBACK_IMAGE_DIR = BASE_DIR / "assets" / "images" / "fallback_generated"
 
 def _build_scene_cache() -> dict[str, str]:
     cache: dict[str, str] = {}
@@ -33,6 +35,7 @@ load_dotenv()
 
 
 SECRET_KEYS = (
+    "MY_API_KEY",
     "GEMINI_API_KEY",
     "GOOGLE_API_KEY",
     "IMAGE_BACKEND",
@@ -55,7 +58,17 @@ SECRET_KEYS = (
 def _clean_config_value(key: str, value: object) -> str:
     """Normalize values from .env or Streamlit Secrets without changing code paths."""
     cleaned = str(value).strip().strip('"').strip("'").strip()
-    if key in {"OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY", "STABILITY_API_KEY", "HF_TOKEN", "ELEVENLABS_API_KEY"}:
+    if cleaned.startswith("`") and cleaned.endswith("`"):
+        cleaned = cleaned.strip("`").strip()
+    lowered = cleaned.lower()
+    if (
+        not cleaned
+        or lowered.startswith("paste_your_")
+        or lowered in {"none", "null", "your_api_key_here", "your_key_here"}
+        or "paste_your" in lowered
+    ):
+        return ""
+    if key in {"MY_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY", "STABILITY_API_KEY", "HF_TOKEN", "ELEVENLABS_API_KEY"}:
         if cleaned.lower().startswith("bearer "):
             cleaned = cleaned[7:].strip()
     return cleaned
@@ -78,6 +91,10 @@ def _load_streamlit_secrets_into_env() -> None:
             os.environ[key] = _clean_config_value(key, secret_value)
         elif os.getenv(key):
             os.environ[key] = _clean_config_value(key, os.getenv(key, ""))
+
+    if os.getenv("MY_API_KEY"):
+        os.environ["GEMINI_API_KEY"] = _clean_config_value("GEMINI_API_KEY", os.getenv("MY_API_KEY", ""))
+        os.environ.setdefault("GOOGLE_API_KEY", os.environ["GEMINI_API_KEY"])
 
 
 _load_streamlit_secrets_into_env()
@@ -111,6 +128,69 @@ THINAI_CACHE_KEYS = {
     Thinai.NEYTAL: scene_weaver.NEYTAL_CACHE_KEYS,
     Thinai.PALAI: scene_weaver.PALAI_CACHE_KEYS,
 }
+
+
+def _fallback_scene_image(scene: SceneFrame, analysis: PoemAnalysis | None = None) -> str | None:
+    """Create a simple local PNG when deployed cache/provider images are unavailable."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except Exception:
+        return None
+
+    thinai = analysis.thinai if analysis and analysis.thinai != Thinai.UNKNOWN else scene.thinai
+    palette = THINAI_COLOR_PALETTE.get(thinai, THINAI_COLOR_PALETTE[Thinai.UNKNOWN])
+    safe_thinai = thinai.value.lower().replace(" ", "_")
+    FALLBACK_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    fallback_path = FALLBACK_IMAGE_DIR / f"{safe_thinai}_scene_{scene.scene_id}.png"
+    if fallback_path.exists():
+        return str(fallback_path)
+
+    width, height = 1280, 720
+    colors = [color.lstrip("#") for color in palette[:3]]
+    rgb = []
+    for color in colors:
+        try:
+            rgb.append(tuple(int(color[i:i + 2], 16) for i in (0, 2, 4)))
+        except Exception:
+            rgb.append((90, 72, 56))
+    while len(rgb) < 3:
+        rgb.append((90, 72, 56))
+
+    image = Image.new("RGB", (width, height), rgb[0])
+    pixels = image.load()
+    for y in range(height):
+        blend = y / max(height - 1, 1)
+        if blend < 0.55:
+            local = blend / 0.55
+            start, end = rgb[0], rgb[1]
+        else:
+            local = (blend - 0.55) / 0.45
+            start, end = rgb[1], rgb[2]
+        row_color = tuple(int(start[i] * (1 - local) + end[i] * local) for i in range(3))
+        for x in range(width):
+            pixels[x, y] = row_color
+
+    draw = ImageDraw.Draw(image, "RGBA")
+    draw.rectangle((0, int(height * 0.62), width, height), fill=(20, 20, 20, 92))
+    draw.ellipse((-180, 430, 520, 980), fill=(255, 255, 255, 28))
+    draw.ellipse((780, 70, 1430, 630), fill=(255, 255, 255, 20))
+
+    title_font = ImageFont.load_default()
+    body_font = ImageFont.load_default()
+    label = f"{thinai.value} - Scene {scene.scene_id}"
+    title = scene.title or "Sangam Scene"
+    description = (scene.description or scene.environment or "Curated Sangam illustration").strip()
+    if len(description) > 130:
+        description = description[:127].rstrip() + "..."
+
+    def safe_text(value: str) -> str:
+        return (value or "").encode("ascii", "replace").decode("ascii")
+
+    draw.text((72, 470), safe_text(label), fill=(255, 247, 220, 235), font=body_font)
+    draw.text((72, 510), safe_text(title), fill=(255, 255, 255, 255), font=title_font)
+    draw.text((72, 555), safe_text(description), fill=(255, 255, 255, 225), font=body_font)
+    image.save(fallback_path, "PNG")
+    return str(fallback_path)
 
 
 def ask_pulavar_chat(
@@ -1659,7 +1739,7 @@ def get_cached_scene_image(
             add_variants_for_key(key)
 
     if not available_images:
-        return None
+        return _fallback_scene_image(scene, analysis)
 
     if exclude_paths:
         unused_images = [path for path in available_images if path not in exclude_paths]

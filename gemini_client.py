@@ -96,10 +96,27 @@ MODELS_TO_TRY = [
 _api_key = None
 
 
+def _clean_api_key(value: str | None) -> str:
+    cleaned = str(value or "").strip().strip('"').strip("'").strip()
+    if cleaned.startswith("`") and cleaned.endswith("`"):
+        cleaned = cleaned.strip("`").strip()
+    if cleaned.lower().startswith("bearer "):
+        cleaned = cleaned[7:].strip()
+    lowered = cleaned.lower()
+    if (
+        not cleaned
+        or lowered.startswith("paste_your_")
+        or lowered in {"none", "null", "your_api_key_here", "your_key_here"}
+        or "paste_your" in lowered
+    ):
+        return ""
+    return cleaned
+
+
 def _get_api_key():
     global _api_key
     if _api_key is None:
-        _api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        _api_key = _clean_api_key(os.getenv("GEMINI_API_KEY")) or _clean_api_key(os.getenv("GOOGLE_API_KEY"))
         if not _api_key:
             raise EnvironmentError(
                 "GEMINI_API_KEY not found. "
