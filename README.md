@@ -393,29 +393,14 @@ Install all dependencies using:
 Important packages currently used by the project:
 
 ```text
-streamlit==1.58.0
-google-generativeai==0.8.5
-google-genai==2.8.0
-python-dotenv==1.2.2
-gTTS==2.5.4
-Pillow==11.3.0
-pydantic==2.13.4
-requests==2.34.2
-httpx==0.28.1
-moviepy==1.0.3
-imageio==2.37.3
-imageio-ffmpeg==0.6.0
-numpy==2.4.6
-pandas==3.0.3
-opencv-python>=4.11.0
-pytesseract>=0.3.13
-huggingface-hub==1.18.0
-openai==2.38.0
-elevenlabs>=2.7.1
-stability-sdk>=0.8.6
-langdetect>=1.0.9
-deep-translator>=1.11.4
-pyyaml==6.0.3
+streamlit>=1.45.0
+google-generativeai>=0.8.5
+python-dotenv>=1.0.1
+requests>=2.32.0
+pillow>=11.0.0
+gtts>=2.5.4
+moviepy>=2.1.2
+numpy>=2.2.0
 ```
 
 ---
