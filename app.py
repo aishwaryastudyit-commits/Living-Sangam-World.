@@ -79,7 +79,32 @@ def _load_streamlit_secrets_into_env() -> None:
     Streamlit Cloud exposes st.secrets, while the app uses os.getenv everywhere.
     Mirror supported secrets into os.environ so deployed and local config match.
     """
+    def secret_value_for(key: str) -> str:
+        try:
+            if key in st.secrets:
+                return _clean_config_value(key, st.secrets[key])
+        except Exception:
+            return ""
+        return ""
+
+    gemini_key = (
+        secret_value_for("GEMINI_API_KEY")
+        or secret_value_for("GOOGLE_API_KEY")
+        or secret_value_for("MY_API_KEY")
+        or _clean_config_value("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY", ""))
+        or _clean_config_value("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
+        or _clean_config_value("MY_API_KEY", os.getenv("MY_API_KEY", ""))
+    )
+    if gemini_key:
+        os.environ["GEMINI_API_KEY"] = gemini_key
+        os.environ["GOOGLE_API_KEY"] = gemini_key
+    else:
+        os.environ.pop("GEMINI_API_KEY", None)
+        os.environ.pop("GOOGLE_API_KEY", None)
+
     for key in SECRET_KEYS:
+        if key in {"MY_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"}:
+            continue
         secret_value = None
         try:
             if key in st.secrets:
@@ -91,10 +116,6 @@ def _load_streamlit_secrets_into_env() -> None:
             os.environ[key] = _clean_config_value(key, secret_value)
         elif os.getenv(key):
             os.environ[key] = _clean_config_value(key, os.getenv(key, ""))
-
-    if os.getenv("MY_API_KEY"):
-        os.environ["GEMINI_API_KEY"] = _clean_config_value("GEMINI_API_KEY", os.getenv("MY_API_KEY", ""))
-        os.environ.setdefault("GOOGLE_API_KEY", os.environ["GEMINI_API_KEY"])
 
 
 _load_streamlit_secrets_into_env()

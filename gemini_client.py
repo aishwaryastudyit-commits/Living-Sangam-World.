@@ -66,6 +66,10 @@ class _SmartImageModel:
                 except Exception as e:
                     last_error = e
                     err = str(e)
+                    if _is_invalid_api_key_error(err):
+                        global _api_key
+                        _api_key = None
+                        raise EnvironmentError(_invalid_api_key_message()) from e
                     if any(x in err for x in ["503", "UNAVAILABLE", "high demand"]):
                         wait = 5 * attempt
                         print(f"[gemini-image] ⏳ Overloaded, waiting {wait}s...")
@@ -125,6 +129,19 @@ def _get_api_key():
     return _api_key
 
 
+def _is_invalid_api_key_error(error_text: str) -> bool:
+    lowered = (error_text or "").lower()
+    return "api_key_invalid" in lowered or "api key not valid" in lowered or "api key invalid" in lowered
+
+
+def _invalid_api_key_message() -> str:
+    return (
+        "Gemini API key is invalid. In Streamlit Cloud, set only "
+        'GEMINI_API_KEY = "your_real_google_ai_studio_key" in Secrets, '
+        "then reboot the app. Do not use paste_your_* placeholders or Bearer prefixes."
+    )
+
+
 class _SmartModel:
     """
     Drop-in replacement for GenerativeModel.
@@ -153,6 +170,10 @@ class _SmartModel:
                 except Exception as e:
                     last_error = e
                     err = str(e)
+                    if _is_invalid_api_key_error(err):
+                        global _api_key
+                        _api_key = None
+                        raise EnvironmentError(_invalid_api_key_message()) from e
                     if any(x in err for x in ["503", "UNAVAILABLE", "high demand"]):
                         wait = 5 * attempt
                         print(f"[gemini] ⏳ Overloaded, waiting {wait}s...")
