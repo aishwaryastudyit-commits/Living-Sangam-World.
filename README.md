@@ -505,6 +505,7 @@ This upgrade is strongly recommended for smoother video generation, rendering, a
 streamlit run app.py
 ```
 
+---
 
 # 🌐 Live Demo & Instant Testing
 
