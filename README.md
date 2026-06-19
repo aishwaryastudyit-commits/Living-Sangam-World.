@@ -505,6 +505,19 @@ This upgrade is strongly recommended for smoother video generation, rendering, a
 streamlit run app.py
 ```
 
+
+# 🌐 Live Demo & Instant Testing
+
+You can experience **Living Sangam World** right now without setting up a local environment! 
+
+👉 **[Try the Live App on Streamlit Cloud](https://living-sangam-world-5ezntmarjlyccw4kwzc2xj.streamlit.app/)**
+
+### 🛠️ How to run your own queries in the Live Demo:
+1. Navigate to the live app link above.
+2. Click on the **"Manage app"** or **"Edit"** option (usually found in the bottom right corner or the developer menu).
+3. Securely provide your own `GEMINI_API_KEY` in the app's runtime secrets panel.
+4. Save the configuration to instantly activate the backend—**no code changes or GitHub commits required!**
+   
 ---
 
 # ✅ Recommended Production Setup
